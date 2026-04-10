@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using SqlKata.Compilers;
@@ -35,8 +36,8 @@ namespace SqlKata.Execution
             query.QueryAlias = QueryAlias;
             query.IsDistinct = IsDistinct;
             query.Method = Method;
-            query.Includes = Includes;
-            query.Variables = Variables;
+            query.Includes = Includes.Select(i => i.Clone()).ToList();
+            query.Variables = new Dictionary<string, object>(Variables);
 
             query.SetEngineScope(EngineScope);
 
