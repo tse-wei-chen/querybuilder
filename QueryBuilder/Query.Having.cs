@@ -652,5 +652,61 @@ namespace SqlKata
         }
 
         #endregion
+        #region aggregate
+
+        public Query HavingAggregate(string aggregate, string column, string op, object value)
+        {
+            return AddComponent("having", new AggregatedCondition
+            {
+                Component = "having",
+                Column = column,
+                Aggregate = aggregate,
+                Operator = op,
+                Value = value,
+                IsOr = GetOr(),
+                IsNot = GetNot(),
+            });
+        }
+
+        public Query HavingSum(string column, string op, object value) => HavingAggregate("sum", column, op, value);
+        public Query HavingCount(string column, string op, object value) => HavingAggregate("count", column, op, value);
+        public Query HavingAvg(string column, string op, object value) => HavingAggregate("avg", column, op, value);
+        public Query HavingMin(string column, string op, object value) => HavingAggregate("min", column, op, value);
+        public Query HavingMax(string column, string op, object value) => HavingAggregate("max", column, op, value);
+
+        public Query HavingBetweenAggregate<T>(string aggregate, string column, T lower, T higher)
+        {
+            return AddComponent("having", new AggregatedBetweenCondition<T>
+            {
+                Component = "having",
+                Column = column,
+                Aggregate = aggregate,
+                Lower = lower,
+                Higher = higher,
+                IsOr = GetOr(),
+                IsNot = GetNot(),
+            });
+        }
+
+        public Query HavingNotBetweenAggregate<T>(string aggregate, string column, T lower, T higher)
+        {
+            return Not().HavingBetweenAggregate(aggregate, column, lower, higher);
+        }
+
+        public Query HavingBetweenSum<T>(string column, T lower, T higher) => HavingBetweenAggregate("sum", column, lower, higher);
+        public Query HavingBetweenCount<T>(string column, T lower, T higher) => HavingBetweenAggregate("count", column, lower, higher);
+        public Query HavingBetweenAvg<T>(string column, T lower, T higher) => HavingBetweenAggregate("avg", column, lower, higher);
+        public Query HavingBetweenMin<T>(string column, T lower, T higher) => HavingBetweenAggregate("min", column, lower, higher);
+        public Query HavingBetweenMax<T>(string column, T lower, T higher) => HavingBetweenAggregate("max", column, lower, higher);
+
+        public Query HavingNotBetweenSum<T>(string column, T lower, T higher) => HavingNotBetweenAggregate("sum", column, lower, higher);
+        public Query HavingNotBetweenCount<T>(string column, T lower, T higher) => HavingNotBetweenAggregate("count", column, lower, higher);
+        public Query HavingNotBetweenAvg<T>(string column, T lower, T higher) => HavingNotBetweenAggregate("avg", column, lower, higher);
+        public Query HavingNotBetweenMin<T>(string column, T lower, T higher) => HavingNotBetweenAggregate("min", column, lower, higher);
+        public Query HavingNotBetweenMax<T>(string column, T lower, T higher) => HavingNotBetweenAggregate("max", column, lower, higher);
+
+
+
+        #endregion
     }
 }

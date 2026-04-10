@@ -336,4 +336,42 @@ namespace SqlKata
             };
         }
     }
+
+    public class AggregatedCondition : BasicCondition
+    {
+        public string Aggregate { get; set; }
+        public override AbstractClause Clone()
+        {
+            return new AggregatedCondition
+            {
+                Engine = Engine,
+                Column = Column,
+                Operator = Operator,
+                Value = Value,
+                IsOr = IsOr,
+                IsNot = IsNot,
+                Aggregate = Aggregate,
+                Component = Component,
+            };
+        }
+    }
+
+    public class AggregatedBetweenCondition<T> : BetweenCondition<T>
+    {
+        public string Aggregate { get; set; }
+        public override AbstractClause Clone()
+        {
+            return new AggregatedBetweenCondition<T>
+            {
+                Engine = Engine,
+                Column = Column,
+                Higher = Higher,
+                Lower = Lower,
+                IsOr = IsOr,
+                IsNot = IsNot,
+                Aggregate = Aggregate,
+                Component = Component,
+            };
+        }
+    }
 }

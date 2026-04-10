@@ -262,5 +262,26 @@ namespace SqlKata.Compilers
 
             return $"{op} ({subCtx.RawSql})";
         }
+
+        protected virtual string CompileAggregatedCondition(SqlResult ctx, AggregatedCondition x)
+        {
+            var column = Wrap(x.Column);
+            var agg = x.Aggregate.ToUpperInvariant();
+
+            var sql = $"{agg}({column}) {checkOperator(x.Operator)} {Parameter(ctx, x.Value)}";
+
+            return x.IsNot ? $"NOT ({sql})" : sql;
+        }
+
+        protected virtual string CompileAggregatedBetweenCondition<T>(SqlResult ctx, AggregatedBetweenCondition<T> x)
+        {
+            var column = Wrap(x.Column);
+            var agg = x.Aggregate.ToUpperInvariant();
+            var between = x.IsNot ? "NOT BETWEEN" : "BETWEEN";
+            var lower = Parameter(ctx, x.Lower);
+            var higher = Parameter(ctx, x.Higher);
+
+            return $"{agg}({column}) {between} {lower} AND {higher}";
+        }
     }
 }
