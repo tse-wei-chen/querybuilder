@@ -601,5 +601,70 @@ namespace SqlKata.Tests
 
             Assert.Equal("SELECT * FROM [Table] WHERE [Col] != cast(0 as bit)", c[EngineCodes.SqlServer].ToString());
         }
+
+        [Fact]
+        public void Clone_ShouldProduceIndependentIncludesList()
+        {
+            var query = new Query("users")
+                .Include("posts", new Query("posts"), "user_id", "id");
+
+            var clone = query.Clone();
+
+            // Adding an include to the clone should not affect the original
+            clone.Include("comments", new Query("comments"), "user_id", "id");
+
+            Assert.Single(query.Includes);
+            Assert.Equal(2, clone.Includes.Count);
+        }
+
+        [Fact]
+        public void Clone_ShouldProduceIndependentIncludeObjects()
+        {
+            var query = new Query("users")
+                .Include("posts", new Query("posts"), "user_id", "id");
+
+            var clone = query.Clone();
+
+            // Modifying an include property on the clone should not affect the original
+            clone.Includes[0].Name = "modified_name";
+
+            Assert.Equal("posts", query.Includes[0].Name);
+            Assert.Equal("modified_name", clone.Includes[0].Name);
+        }
+
+        [Fact]
+        public void Clone_ShouldProduceIndependentVariablesDictionary()
+        {
+            var query = new Query("users").Define("limit", 10);
+
+            var clone = query.Clone();
+
+            // Adding a variable to the clone should not affect the original
+            clone.Define("offset", 5);
+
+            Assert.False(query.Variables.ContainsKey("offset"));
+            Assert.True(clone.Variables.ContainsKey("offset"));
+        }
+
+        [Fact]
+        public void Clone_ShouldPreserveAllProperties()
+        {
+            var query = new Query("users")
+                .Select("id", "name")
+                .Where("active", true)
+                .Distinct()
+                .As("u")
+                .Include("posts", new Query("posts"), "user_id", "id")
+                .Define("myvar", 42);
+
+            var clone = query.Clone();
+
+            Assert.Equal(query.QueryAlias, clone.QueryAlias);
+            Assert.Equal(query.IsDistinct, clone.IsDistinct);
+            Assert.Equal(query.Method, clone.Method);
+            Assert.Equal(query.Includes.Count, clone.Includes.Count);
+            Assert.Equal(query.Includes[0].Name, clone.Includes[0].Name);
+            Assert.Equal(query.Variables["myvar"], clone.Variables["myvar"]);
+        }
     }
 }

@@ -55,8 +55,8 @@ namespace SqlKata
             clone.QueryAlias = QueryAlias;
             clone.IsDistinct = IsDistinct;
             clone.Method = Method;
-            clone.Includes = Includes;
-            clone.Variables = Variables;
+            clone.Includes = Includes.Select(i => i.Clone()).ToList();
+            clone.Variables = new Dictionary<string, object>(Variables);
             return clone;
         }
 
