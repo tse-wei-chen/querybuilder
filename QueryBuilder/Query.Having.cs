@@ -705,7 +705,114 @@ namespace SqlKata
         public Query HavingNotBetweenMin<T>(string column, T lower, T higher) => HavingNotBetweenAggregate("min", column, lower, higher);
         public Query HavingNotBetweenMax<T>(string column, T lower, T higher) => HavingNotBetweenAggregate("max", column, lower, higher);
 
+        public Query HavingInAggregate(string aggregate, string column, IEnumerable<object> values)
+        {
+            return AddComponent("having", new AggregatedInCondition<object>
+            {
+                Component = "having",
+                Column = column,
+                Aggregate = aggregate,
+                Values = values?.ToList(),
+                IsOr = GetOr(),
+                IsNot = GetNot(),
+            });
+        }
 
+        public Query HavingNotInAggregate(string aggregate, string column, IEnumerable<object> values)
+        {
+            return Not().HavingInAggregate(aggregate, column, values);
+        }
+
+        public Query HavingInSum(string column, IEnumerable<object> values) => HavingInAggregate("sum", column, values);
+        public Query HavingInCount(string column, IEnumerable<object> values) => HavingInAggregate("count", column, values);
+        public Query HavingInAvg(string column, IEnumerable<object> values) => HavingInAggregate("avg", column, values);
+        public Query HavingInMin(string column, IEnumerable<object> values) => HavingInAggregate("min", column, values);
+        public Query HavingInMax(string column, IEnumerable<object> values) => HavingInAggregate("max", column, values);
+
+        public Query HavingNotInSum(string column, IEnumerable<object> values) => HavingNotInAggregate("sum", column, values);
+        public Query HavingNotInCount(string column, IEnumerable<object> values) => HavingNotInAggregate("count", column, values);
+        public Query HavingNotInAvg(string column, IEnumerable<object> values) => HavingNotInAggregate("avg", column, values);
+        public Query HavingNotInMin(string column, IEnumerable<object> values) => HavingNotInAggregate("min", column, values);
+        public Query HavingNotInMax(string column, IEnumerable<object> values) => HavingNotInAggregate("max", column, values);
+
+        public Query HavingLikeAggregate(string aggregate, string column, object value, bool caseSensitive = false, string escapeCharacter = null)
+        {
+            return AddComponent("having", new AggregatedStringCondition
+            {
+                Component = "having",
+                Operator = "like",
+                Column = column,
+                Aggregate = aggregate,
+                Value = value,
+                CaseSensitive = caseSensitive,
+                EscapeCharacter = escapeCharacter,
+                IsOr = GetOr(),
+                IsNot = GetNot(),
+            });
+        }
+
+        public Query HavingStartsAggregate(string aggregate, string column, object value, bool caseSensitive = false, string escapeCharacter = null)
+        {
+            return AddComponent("having", new AggregatedStringCondition
+            {
+                Component = "having",
+                Operator = "starts",
+                Column = column,
+                Aggregate = aggregate,
+                Value = value,
+                CaseSensitive = caseSensitive,
+                EscapeCharacter = escapeCharacter,
+                IsOr = GetOr(),
+                IsNot = GetNot(),
+            });
+        }
+
+        public Query HavingEndsAggregate(string aggregate, string column, object value, bool caseSensitive = false, string escapeCharacter = null)
+        {
+            return AddComponent("having", new AggregatedStringCondition
+            {
+                Component = "having",
+                Operator = "ends",
+                Column = column,
+                Aggregate = aggregate,
+                Value = value,
+                CaseSensitive = caseSensitive,
+                EscapeCharacter = escapeCharacter,
+                IsOr = GetOr(),
+                IsNot = GetNot(),
+            });
+        }
+
+        public Query HavingContainsAggregate(string aggregate, string column, object value, bool caseSensitive = false, string escapeCharacter = null)
+        {
+            return AddComponent("having", new AggregatedStringCondition
+            {
+                Component = "having",
+                Operator = "contains",
+                Column = column,
+                Aggregate = aggregate,
+                Value = value,
+                CaseSensitive = caseSensitive,
+                EscapeCharacter = escapeCharacter,
+                IsOr = GetOr(),
+                IsNot = GetNot(),
+            });
+        }
+
+        public Query HavingDateAggregate(string aggregate, string column, string op, object value)
+        {
+            return AddComponent("having", new AggregatedDateCondition
+            {
+                Component = "having",
+                Operator = op,
+                Column = column,
+                Aggregate = aggregate,
+                Value = value,
+                Part = "date",
+                IsOr = GetOr(),
+                IsNot = GetNot(),
+            });
+        }
 
         #endregion
     }

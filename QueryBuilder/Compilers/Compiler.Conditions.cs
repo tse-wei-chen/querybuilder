@@ -283,5 +283,54 @@ namespace SqlKata.Compilers
 
             return $"{agg}({column}) {between} {lower} AND {higher}";
         }
+
+        protected virtual string CompileAggregatedInCondition<T>(SqlResult ctx, AggregatedInCondition<T> x)
+        {
+            var column = Wrap(x.Column);
+            var agg = x.Aggregate.ToUpperInvariant();
+
+            if (!x.Values.Any())
+            {
+                return x.IsNot ? $"1 = 1 /* NOT IN [empty list] */" : "1 = 0 /* IN [empty list] */";
+            }
+
+            var inOperator = x.IsNot ? "NOT IN" : "IN";
+
+            var values = Parameterize(ctx, x.Values);
+
+            return $"{agg}({column}) {inOperator} ({values})";
+        }
+
+        protected virtual string CompileAggregatedStringCondition(SqlResult ctx, AggregatedStringCondition x)
+        {
+            // Reuse CompileBasicStringCondition logic but wrap the column in aggregate function
+            var originalColumn = x.Column;
+            var agg = x.Aggregate.ToUpperInvariant();
+
+            x.Column = $"{agg}({Wrap(originalColumn)})";
+
+            try
+            {
+                // This is a bit of a hack: we temporarily modify the column name to include the function.
+                // However, since we've already wrapped the internal column name, 
+                // the compiler's Wrap will see the parenthesis and return it as is.
+                return CompileBasicStringCondition(ctx, x);
+            }
+            finally
+            {
+                x.Column = originalColumn;
+            }
+        }
+
+        protected virtual string CompileAggregatedDateCondition(SqlResult ctx, AggregatedDateCondition x)
+        {
+            var column = Wrap(x.Column);
+            var agg = x.Aggregate.ToUpperInvariant();
+            var op = checkOperator(x.Operator);
+
+            var sql = $"{x.Part.ToUpperInvariant()}({agg}({column})) {op} {Parameter(ctx, x.Value)}";
+
+            return x.IsNot ? $"NOT ({sql})" : sql;
+        }
     }
 }
