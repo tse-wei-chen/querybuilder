@@ -12,6 +12,23 @@ namespace SqlKata
             return Select(columns.AsEnumerable());
         }
 
+        public Query Select(params AbstractColumn[] columns)
+        {
+            return Select(columns.AsEnumerable());
+        }
+
+        public Query Select(IEnumerable<AbstractColumn> columns)
+        {
+            Method = "select";
+
+            foreach (var column in columns)
+            {
+                AddComponent("select", column);
+            }
+
+            return this;
+        }
+
         public Query Select(IEnumerable<string> columns)
         {
             Method = "select";

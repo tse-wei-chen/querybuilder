@@ -106,4 +106,68 @@ namespace SqlKata
             };
         }
     }
+
+    /// <summary>
+    /// Represents an arithmetic column clause.
+    /// </summary>
+    /// <seealso cref="AbstractColumn" />
+    public class ArithmeticColumn : AbstractColumn
+    {
+        /// <summary>
+        /// Gets or sets the left operand.
+        /// </summary>
+        /// <value>
+        /// The left operand.
+        /// </value>
+        public AbstractColumn Left { get; set; }
+        /// <summary>
+        /// Gets or sets the operator.
+        /// </summary>
+        /// <value>
+        /// The operator.
+        /// </value>
+        public string Operator { get; set; }
+        /// <summary>
+        /// Gets or sets the right operand.
+        /// </summary>
+        /// <value>
+        /// The right operand.
+        /// </value>
+        public AbstractColumn Right { get; set; }
+        /// <summary>
+        /// Gets or sets the alias.
+        /// </summary>
+        /// <value>
+        /// The alias.
+        /// </value>
+        public string Alias { get; set; }
+
+        public override AbstractClause Clone()
+        {
+            return new ArithmeticColumn
+            {
+                Engine = Engine,
+                Component = Component,
+                Left = Left.Clone() as AbstractColumn,
+                Operator = Operator,
+                Right = Right.Clone() as AbstractColumn,
+                Alias = Alias,
+            };
+        }
+    }
+
+    public class NumberColumn : AbstractColumn
+    {
+        public object Value { get; set; }
+
+        public override AbstractClause Clone()
+        {
+            return new NumberColumn
+            {
+                Engine = Engine,
+                Component = Component,
+                Value = Value,
+            };
+        }
+    }
 }

@@ -555,6 +555,25 @@ namespace SqlKata.Compilers
                 return $"{agg}(CASE WHEN {filterCondition} THEN {col} END){alias}";
             }
 
+            if (column is ArithmeticColumn arithmetic)
+            {
+                var left = CompileColumn(ctx, arithmetic.Left);
+                var right = CompileColumn(ctx, arithmetic.Right);
+                var sql = $"({left} {arithmetic.Operator} {right})";
+
+                if (!string.IsNullOrEmpty(arithmetic.Alias))
+                {
+                    sql += $" {ColumnAsKeyword}{WrapValue(arithmetic.Alias)}";
+                }
+
+                return sql;
+            }
+
+            if (column is NumberColumn num)
+            {
+                return Parameter(ctx, num.Value);
+            }
+
             return Wrap((column as Column).Name);
 
         }
