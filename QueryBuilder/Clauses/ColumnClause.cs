@@ -1,3 +1,6 @@
+using System.Collections.Generic;
+using System.Linq;
+
 namespace SqlKata
 {
     public abstract class AbstractColumn : AbstractClause
@@ -166,6 +169,40 @@ namespace SqlKata
             {
                 Engine = Engine,
                 Component = Component,
+                Value = Value,
+            };
+        }
+    }
+
+    public class CaseColumn : AbstractColumn
+    {
+        public List<CaseWhenClause> Cases { get; set; } = [];
+        public object ElseValue { get; set; }
+        public string Alias { get; set; }
+
+        public override AbstractClause Clone()
+        {
+            return new CaseColumn
+            {
+                Engine = Engine,
+                Component = Component,
+                Cases = [.. Cases.Select(x => x.Clone())],
+                ElseValue = ElseValue,
+                Alias = Alias,
+            };
+        }
+    }
+
+    public class CaseWhenClause
+    {
+        public Query ConditionQuery { get; set; }
+        public object Value { get; set; }
+
+        public CaseWhenClause Clone()
+        {
+            return new CaseWhenClause
+            {
+                ConditionQuery = ConditionQuery.Clone(),
                 Value = Value,
             };
         }

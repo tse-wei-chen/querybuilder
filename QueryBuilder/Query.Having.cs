@@ -814,6 +814,67 @@ namespace SqlKata
             });
         }
 
+        public Query OrHavingDateAggregate(string aggregate, string column, string op, object value)
+        {
+            return Or().HavingDateAggregate(aggregate, column, op, value);
+        }
+
+        public Query HavingDateIn<T>(string column, IEnumerable<T> values)
+        {
+            return AddComponent("having", new InDateCondition<T>
+            {
+                Column = column,
+                IsOr = GetOr(),
+                IsNot = GetNot(),
+                Values = values.Distinct().ToList(),
+                Part = "date",
+                Component = "having"
+            });
+        }
+
+        public Query HavingDateBetween<T>(string column, T lower, T higher)
+        {
+            return AddComponent("having", new BetweenDateCondition<T>
+            {
+                Column = column,
+                IsOr = GetOr(),
+                IsNot = GetNot(),
+                Lower = lower,
+                Higher = higher,
+                Part = "date",
+                Component = "having"
+            });
+        }
+
+        public Query HavingDateInAggregate<T>(string aggregate, string column, IEnumerable<T> values)
+        {
+            return AddComponent("having", new AggregatedInDateCondition<T>
+            {
+                Column = column,
+                Aggregate = aggregate,
+                IsOr = GetOr(),
+                IsNot = GetNot(),
+                Values = values.Distinct().ToList(),
+                Part = "date",
+                Component = "having"
+            });
+        }
+
+        public Query HavingDateBetweenAggregate<T>(string aggregate, string column, T lower, T higher)
+        {
+            return AddComponent("having", new AggregatedBetweenDateCondition<T>
+            {
+                Column = column,
+                Aggregate = aggregate,
+                IsOr = GetOr(),
+                IsNot = GetNot(),
+                Lower = lower,
+                Higher = higher,
+                Part = "date",
+                Component = "having"
+            });
+        }
+
         #endregion
     }
 }

@@ -694,6 +694,61 @@ namespace SqlKata
             return OrWhereNotTime(column, "=", value);
         }
 
+        public Q WhereDateIn<T>(string column, IEnumerable<T> values)
+        {
+            return AddComponent("where", new InDateCondition<T>
+            {
+                Column = column,
+                IsOr = GetOr(),
+                IsNot = GetNot(),
+                Values = values.Distinct().ToList(),
+                Part = "date"
+            });
+        }
+
+        public Q OrWhereDateIn<T>(string column, IEnumerable<T> values)
+        {
+            return Or().WhereDateIn(column, values);
+        }
+
+        public Q WhereDateNotIn<T>(string column, IEnumerable<T> values)
+        {
+            return Not().WhereDateIn(column, values);
+        }
+
+        public Q OrWhereDateNotIn<T>(string column, IEnumerable<T> values)
+        {
+            return Or().Not().WhereDateIn(column, values);
+        }
+
+        public Q WhereDateBetween<T>(string column, T lower, T higher)
+        {
+            return AddComponent("where", new BetweenDateCondition<T>
+            {
+                Column = column,
+                IsOr = GetOr(),
+                IsNot = GetNot(),
+                Lower = lower,
+                Higher = higher,
+                Part = "date"
+            });
+        }
+
+        public Q OrWhereDateBetween<T>(string column, T lower, T higher)
+        {
+            return Or().WhereDateBetween(column, lower, higher);
+        }
+
+        public Q WhereDateNotBetween<T>(string column, T lower, T higher)
+        {
+            return Not().WhereDateBetween(column, lower, higher);
+        }
+
+        public Q OrWhereDateNotBetween<T>(string column, T lower, T higher)
+        {
+            return Or().Not().WhereDateBetween(column, lower, higher);
+        }
+
         #endregion
     }
 }

@@ -433,4 +433,79 @@ namespace SqlKata
             };
         }
     }
+    public class InDateCondition<T> : InCondition<T>
+    {
+        public string Part { get; set; }
+        public override AbstractClause Clone()
+        {
+            return new InDateCondition<T>
+            {
+                Engine = Engine,
+                Column = Column,
+                Values = new List<T>(Values),
+                IsOr = IsOr,
+                IsNot = IsNot,
+                Part = Part,
+                Component = Component,
+            };
+        }
+    }
+
+    public class BetweenDateCondition<T> : BetweenCondition<T>
+    {
+        public string Part { get; set; }
+        public override AbstractClause Clone()
+        {
+            return new BetweenDateCondition<T>
+            {
+                Engine = Engine,
+                Column = Column,
+                Higher = Higher,
+                Lower = Lower,
+                IsOr = IsOr,
+                IsNot = IsNot,
+                Part = Part,
+                Component = Component,
+            };
+        }
+    }
+
+    public class AggregatedInDateCondition<T> : AggregatedInCondition<T>
+    {
+        public string Part { get; set; }
+        public override AbstractClause Clone()
+        {
+            return new AggregatedInDateCondition<T>
+            {
+                Engine = Engine,
+                Column = Column,
+                Values = new List<T>(Values),
+                IsOr = IsOr,
+                IsNot = IsNot,
+                Aggregate = Aggregate,
+                Part = Part,
+                Component = Component,
+            };
+        }
+    }
+
+    public class AggregatedBetweenDateCondition<T> : AggregatedBetweenCondition<T>
+    {
+        public string Part { get; set; }
+        public override AbstractClause Clone()
+        {
+            return new AggregatedBetweenDateCondition<T>
+            {
+                Engine = Engine,
+                Column = Column,
+                Higher = Higher,
+                Lower = Lower,
+                IsOr = IsOr,
+                IsNot = IsNot,
+                Aggregate = Aggregate,
+                Part = Part,
+                Component = Component,
+            };
+        }
+    }
 }

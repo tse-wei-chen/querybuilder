@@ -332,5 +332,60 @@ namespace SqlKata.Compilers
 
             return x.IsNot ? $"NOT ({sql})" : sql;
         }
+        protected virtual string CompileInDateCondition<T>(SqlResult ctx, InDateCondition<T> x)
+        {
+            var column = Wrap(x.Column);
+            var part = x.Part.ToUpperInvariant();
+
+            if (!x.Values.Any())
+            {
+                return x.IsNot ? $"1 = 1 /* NOT IN [empty list] */" : "1 = 0 /* IN [empty list] */";
+            }
+
+            var inOperator = x.IsNot ? "NOT IN" : "IN";
+            var values = Parameterize(ctx, x.Values);
+
+            return $"{part}({column}) {inOperator} ({values})";
+        }
+
+        protected virtual string CompileBetweenDateCondition<T>(SqlResult ctx, BetweenDateCondition<T> x)
+        {
+            var column = Wrap(x.Column);
+            var part = x.Part.ToUpperInvariant();
+            var between = x.IsNot ? "NOT BETWEEN" : "BETWEEN";
+            var lower = Parameter(ctx, x.Lower);
+            var higher = Parameter(ctx, x.Higher);
+
+            return $"{part}({column}) {between} {lower} AND {higher}";
+        }
+
+        protected virtual string CompileAggregatedInDateCondition<T>(SqlResult ctx, AggregatedInDateCondition<T> x)
+        {
+            var column = Wrap(x.Column);
+            var part = x.Part.ToUpperInvariant();
+            var agg = x.Aggregate.ToUpperInvariant();
+
+            if (!x.Values.Any())
+            {
+                return x.IsNot ? $"1 = 1 /* NOT IN [empty list] */" : "1 = 0 /* IN [empty list] */";
+            }
+
+            var inOperator = x.IsNot ? "NOT IN" : "IN";
+            var values = Parameterize(ctx, x.Values);
+
+            return $"{part}({agg}({column})) {inOperator} ({values})";
+        }
+
+        protected virtual string CompileAggregatedBetweenDateCondition<T>(SqlResult ctx, AggregatedBetweenDateCondition<T> x)
+        {
+            var column = Wrap(x.Column);
+            var part = x.Part.ToUpperInvariant();
+            var agg = x.Aggregate.ToUpperInvariant();
+            var between = x.IsNot ? "NOT BETWEEN" : "BETWEEN";
+            var lower = Parameter(ctx, x.Lower);
+            var higher = Parameter(ctx, x.Higher);
+
+            return $"{part}({agg}({column})) {between} {lower} AND {higher}";
+        }
     }
 }

@@ -574,8 +574,39 @@ namespace SqlKata.Compilers
                 return Parameter(ctx, num.Value);
             }
 
+            if (column is CaseColumn caseColumn)
+            {
+                return CompileCaseColumn(ctx, caseColumn);
+            }
+
             return Wrap((column as Column).Name);
 
+        }
+
+        protected virtual string CompileCaseColumn(SqlResult ctx, CaseColumn column)
+        {
+            var sql = new StringBuilder("CASE");
+
+            foreach (var @case in column.Cases)
+            {
+                var conditions = @case.ConditionQuery.GetComponents<AbstractCondition>("where", EngineCode);
+                var when = CompileConditions(ctx, conditions);
+                sql.Append($" WHEN {when} THEN {Parameter(ctx, @case.Value)}");
+            }
+
+            if (column.ElseValue != null)
+            {
+                sql.Append($" ELSE {Parameter(ctx, column.ElseValue)}");
+            }
+
+            sql.Append(" END");
+
+            if (!string.IsNullOrEmpty(column.Alias))
+            {
+                sql.Append($" {ColumnAsKeyword}{WrapValue(column.Alias)}");
+            }
+
+            return sql.ToString();
         }
 
         protected virtual string CompileFilterConditions(SqlResult ctx, AggregatedColumn aggregatedColumn)
