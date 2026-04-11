@@ -5,6 +5,7 @@ namespace SqlKata
 {
     public abstract class AbstractColumn : AbstractClause
     {
+        public string Alias { get; set; }
     }
 
     /// <summary>
@@ -28,6 +29,7 @@ namespace SqlKata
             {
                 Engine = Engine,
                 Name = Name,
+                Alias = Alias,
                 Component = Component,
             };
         }
@@ -52,6 +54,7 @@ namespace SqlKata
             {
                 Engine = Engine,
                 Query = Query.Clone(),
+                Alias = Alias,
                 Component = Component,
             };
         }
@@ -76,6 +79,7 @@ namespace SqlKata
                 Engine = Engine,
                 Expression = Expression,
                 Bindings = Bindings,
+                Alias = Alias,
                 Component = Component,
             };
         }
@@ -105,6 +109,7 @@ namespace SqlKata
                 Filter = Filter?.Clone(),
                 Column = Column.Clone() as AbstractColumn,
                 Aggregate = Aggregate,
+                Alias = Alias,
                 Component = Component,
             };
         }
@@ -137,13 +142,6 @@ namespace SqlKata
         /// The right operand.
         /// </value>
         public AbstractColumn Right { get; set; }
-        /// <summary>
-        /// Gets or sets the alias.
-        /// </summary>
-        /// <value>
-        /// The alias.
-        /// </value>
-        public string Alias { get; set; }
 
         public override AbstractClause Clone()
         {
@@ -170,6 +168,7 @@ namespace SqlKata
                 Engine = Engine,
                 Component = Component,
                 Value = Value,
+                Alias = Alias,
             };
         }
     }
@@ -178,7 +177,6 @@ namespace SqlKata
     {
         public List<CaseWhenClause> Cases { get; set; } = [];
         public object ElseValue { get; set; }
-        public string Alias { get; set; }
 
         public override AbstractClause Clone()
         {

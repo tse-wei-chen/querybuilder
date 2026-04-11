@@ -510,77 +510,74 @@ namespace SqlKata.Compilers
         /// <returns></returns>
         public virtual string CompileColumn(SqlResult ctx, AbstractColumn column)
         {
+            string sql;
+
             if (column is RawColumn raw)
             {
                 ctx.Bindings.AddRange(raw.Bindings);
-                return WrapIdentifiers(raw.Expression);
+                sql = WrapIdentifiers(raw.Expression);
             }
-
-            if (column is QueryColumn queryColumn)
+            else if (column is QueryColumn queryColumn)
             {
-                var alias = "";
-
-                if (!string.IsNullOrWhiteSpace(queryColumn.Query.QueryAlias))
-                {
-                    alias = $" {ColumnAsKeyword}{WrapValue(queryColumn.Query.QueryAlias)}";
-                }
-
                 var subCtx = CompileSelectQuery(queryColumn.Query);
-
                 ctx.Bindings.AddRange(subCtx.Bindings);
-
-                return "(" + subCtx.RawSql + $"){alias}";
+                sql = "(" + subCtx.RawSql + ")";
             }
-
-            if (column is AggregatedColumn aggregatedColumn)
+            else if (column is AggregatedColumn aggregatedColumn)
             {
                 string agg = aggregatedColumn.Aggregate.ToUpperInvariant();
-
-                var (col, alias) = SplitAlias(CompileColumn(ctx, aggregatedColumn.Column));
-
-                alias = string.IsNullOrEmpty(alias) ? "" : $" {ColumnAsKeyword}{alias}";
-
+                var (col, innerAlias) = SplitAlias(CompileColumn(ctx, aggregatedColumn.Column));
                 string filterCondition = CompileFilterConditions(ctx, aggregatedColumn);
 
                 if (string.IsNullOrEmpty(filterCondition))
                 {
-                    return $"{agg}({col}){alias}";
+                    sql = $"{agg}({col})";
                 }
-
-                if (SupportsFilterClause)
+                else if (SupportsFilterClause)
                 {
-                    return $"{agg}({col}) FILTER (WHERE {filterCondition}){alias}";
+                    sql = $"{agg}({col}) FILTER (WHERE {filterCondition})";
+                }
+                else
+                {
+                    sql = $"{agg}(CASE WHEN {filterCondition} THEN {col} END)";
                 }
 
-                return $"{agg}(CASE WHEN {filterCondition} THEN {col} END){alias}";
+                if (string.IsNullOrEmpty(column.Alias) && !string.IsNullOrEmpty(innerAlias))
+                {
+                    column.Alias = innerAlias;
+                }
             }
-
-            if (column is ArithmeticColumn arithmetic)
+            else if (column is ArithmeticColumn arithmetic)
             {
                 var left = CompileColumn(ctx, arithmetic.Left);
+                var (leftCol, _) = SplitAlias(left);
                 var right = CompileColumn(ctx, arithmetic.Right);
-                var sql = $"({left} {arithmetic.Operator} {right})";
+                var (rightCol, _) = SplitAlias(right);
+                sql = $"({leftCol} {arithmetic.Operator} {rightCol})";
+            }
+            else if (column is NumberColumn num)
+            {
+                sql = Parameter(ctx, num.Value);
+            }
+            else if (column is CaseColumn caseColumn)
+            {
+                sql = CompileCaseColumn(ctx, caseColumn);
+            }
+            else
+            {
+                sql = Wrap((column as Column).Name);
+            }
 
-                if (!string.IsNullOrEmpty(arithmetic.Alias))
+            if (!string.IsNullOrEmpty(column.Alias))
+            {
+                var (main, currentAlias) = SplitAlias(sql);
+                if (string.IsNullOrEmpty(currentAlias))
                 {
-                    sql += $" {ColumnAsKeyword}{WrapValue(arithmetic.Alias)}";
+                    sql = main + $" {ColumnAsKeyword}{WrapValue(column.Alias)}";
                 }
-
-                return sql;
             }
 
-            if (column is NumberColumn num)
-            {
-                return Parameter(ctx, num.Value);
-            }
-
-            if (column is CaseColumn caseColumn)
-            {
-                return CompileCaseColumn(ctx, caseColumn);
-            }
-
-            return Wrap((column as Column).Name);
-
+            return sql;
         }
 
         protected virtual string CompileCaseColumn(SqlResult ctx, CaseColumn column)
