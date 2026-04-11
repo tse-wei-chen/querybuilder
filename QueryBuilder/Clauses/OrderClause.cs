@@ -23,6 +23,24 @@ namespace SqlKata
         }
     }
 
+    public class OrderByColumn : AbstractOrderBy
+    {
+        public AbstractColumn ColumnExpr { get; set; }
+        public bool Ascending { get; set; } = true;
+
+        /// <inheritdoc />
+        public override AbstractClause Clone()
+        {
+            return new OrderByColumn
+            {
+                Engine = Engine,
+                Component = Component,
+                ColumnExpr = ColumnExpr.Clone() as AbstractColumn,
+                Ascending = Ascending
+            };
+        }
+    }
+
     public class RawOrderBy : AbstractOrderBy
     {
         public string Expression { get; set; }

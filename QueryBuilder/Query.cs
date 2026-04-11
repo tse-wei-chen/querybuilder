@@ -284,6 +284,15 @@ namespace SqlKata
             return this;
         }
 
+        public Query OrderBy(AbstractColumn column)
+        {
+            return AddComponent("order", new OrderByColumn
+            {
+                ColumnExpr = column,
+                Ascending = true
+            });
+        }
+
         public Query OrderByDesc(params string[] columns)
         {
             foreach (var column in columns)
@@ -296,6 +305,15 @@ namespace SqlKata
             }
 
             return this;
+        }
+
+        public Query OrderByDesc(AbstractColumn column)
+        {
+            return AddComponent("order", new OrderByColumn
+            {
+                ColumnExpr = column,
+                Ascending = false
+            });
         }
 
         public Query OrderByRaw(string expression, params object[] bindings)

@@ -842,16 +842,27 @@ namespace SqlKata.Compilers
                 .GetComponents<AbstractOrderBy>("order", EngineCode)
                 .Select(x =>
             {
-
                 if (x is RawOrderBy raw)
                 {
                     ctx.Bindings.AddRange(raw.Bindings);
                     return WrapIdentifiers(raw.Expression);
                 }
 
-                var direction = (x as OrderBy).Ascending ? "" : " DESC";
+                if (x is OrderByColumn colExpr)
+                {
+                    var direction = colExpr.Ascending ? "" : " DESC";
+                    return CompileColumn(ctx, colExpr.ColumnExpr) + direction;
+                }
 
-                return Wrap((x as OrderBy).Column) + direction;
+                if (x is OrderByRandom)
+                {
+                    return CompileRandom(null);
+                }
+
+                var orderBy = x as OrderBy;
+                var dir = orderBy.Ascending ? "" : " DESC";
+
+                return Wrap(orderBy.Column) + dir;
             });
 
             return "ORDER BY " + string.Join(", ", columns);
