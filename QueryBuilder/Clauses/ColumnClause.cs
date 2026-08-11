@@ -67,7 +67,8 @@ namespace SqlKata
         public bool IsDistinct { get; set; }
         public Query FilterQuery { get; set; }
         public List<AbstractColumn> OverPartitionBy { get; set; }
-        public List<(AbstractColumn Column, string Direction)> OverOrderBy { get; set; }
+        public List<(AbstractColumn Column, string Direction, string NullOrdering)> OverOrderBy { get; set; }
+        public string OverFrame { get; set; }
 
         public override AbstractClause Clone()
         {
@@ -79,7 +80,8 @@ namespace SqlKata
                 IsDistinct = IsDistinct,
                 FilterQuery = FilterQuery?.Clone(),
                 OverPartitionBy = OverPartitionBy?.Select(x => x.Clone() as AbstractColumn).ToList(),
-                OverOrderBy = OverOrderBy?.Select(x => (x.Column.Clone() as AbstractColumn, x.Direction)).ToList(),
+                OverOrderBy = OverOrderBy?.Select(x => (x.Column.Clone() as AbstractColumn, x.Direction, x.NullOrdering)).ToList(),
+                OverFrame = OverFrame,
                 Alias = Alias,
                 Component = Component,
             };
@@ -178,6 +180,28 @@ namespace SqlKata
                 Left = Left.Clone() as AbstractColumn,
                 Operator = Operator,
                 Right = Right.Clone() as AbstractColumn,
+                Alias = Alias,
+            };
+        }
+    }
+
+    /// <summary>
+    /// A validated CAST expression. TypeName is supplied by the caller after
+    /// capability validation and is never populated from an unchecked fragment.
+    /// </summary>
+    public class CastColumn : AbstractColumn
+    {
+        public AbstractColumn Expression { get; set; }
+        public string TypeName { get; set; }
+
+        public override AbstractClause Clone()
+        {
+            return new CastColumn
+            {
+                Engine = Engine,
+                Component = Component,
+                Expression = Expression?.Clone() as AbstractColumn,
+                TypeName = TypeName,
                 Alias = Alias,
             };
         }

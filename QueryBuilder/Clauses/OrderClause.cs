@@ -27,6 +27,7 @@ namespace SqlKata
     {
         public AbstractColumn ColumnExpr { get; set; }
         public bool Ascending { get; set; } = true;
+        public string NullOrdering { get; set; }
 
         /// <inheritdoc />
         public override AbstractClause Clone()
@@ -36,7 +37,8 @@ namespace SqlKata
                 Engine = Engine,
                 Component = Component,
                 ColumnExpr = ColumnExpr.Clone() as AbstractColumn,
-                Ascending = Ascending
+                Ascending = Ascending,
+                NullOrdering = NullOrdering
             };
         }
     }

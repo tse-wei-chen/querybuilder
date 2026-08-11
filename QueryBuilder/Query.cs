@@ -316,6 +316,16 @@ namespace SqlKata
             });
         }
 
+        public Query OrderBy(AbstractColumn column, bool ascending, string nullOrdering)
+        {
+            return AddComponent("order", new OrderByColumn
+            {
+                ColumnExpr = column,
+                Ascending = ascending,
+                NullOrdering = nullOrdering
+            });
+        }
+
         public Query OrderByRaw(string expression, params object[] bindings)
         {
             return AddComponent("order", new RawOrderBy

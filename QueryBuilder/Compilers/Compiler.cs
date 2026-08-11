@@ -558,7 +558,8 @@ namespace SqlKata.Compilers
                     }
                 }
 
-                if (functionColumn.OverPartitionBy?.Count > 0 || functionColumn.OverOrderBy?.Count > 0)
+                if (functionColumn.OverPartitionBy?.Count > 0 || functionColumn.OverOrderBy?.Count > 0
+                    || !string.IsNullOrWhiteSpace(functionColumn.OverFrame))
                 {
                     var overParts = new List<string>();
 
@@ -577,7 +578,12 @@ namespace SqlKata.Compilers
                             {
                                 var (col, _) = SplitAlias(CompileColumn(ctx, o.Column));
                                 var dir = o.Direction?.Equals("desc", StringComparison.OrdinalIgnoreCase) == true ? " DESC" : " ASC";
-                                return col + dir;
+                                var nullOrdering = o.NullOrdering?.Equals("first", StringComparison.OrdinalIgnoreCase) == true
+                                    ? " NULLS FIRST"
+                                    : o.NullOrdering?.Equals("last", StringComparison.OrdinalIgnoreCase) == true
+                                        ? " NULLS LAST"
+                                        : string.Empty;
+                                return col + dir + nullOrdering;
                             });
                         var orderByStr = $"ORDER BY {string.Join(", ", orders)}";
 
@@ -586,8 +592,17 @@ namespace SqlKata.Compilers
                         overParts.Add(orderByStr);
                     }
 
+                    if (!string.IsNullOrWhiteSpace(functionColumn.OverFrame))
+                        overParts.Add(functionColumn.OverFrame);
+
                     sql += $" OVER ({string.Join(" ", overParts)})";
                 }
+            }
+            else if (column is CastColumn castColumn)
+            {
+                var expression = CompileColumn(ctx, castColumn.Expression);
+                var (value, _) = SplitAlias(expression);
+                sql = $"CAST({value} AS {castColumn.TypeName})";
             }
             else if (column is AggregatedColumn aggregatedColumn)
             {
@@ -924,7 +939,12 @@ namespace SqlKata.Compilers
                 if (x is OrderByColumn colExpr)
                 {
                     var direction = colExpr.Ascending ? "" : " DESC";
-                    return CompileColumn(ctx, colExpr.ColumnExpr) + direction;
+                    var nullOrdering = colExpr.NullOrdering?.Equals("first", StringComparison.OrdinalIgnoreCase) == true
+                        ? " NULLS FIRST"
+                        : colExpr.NullOrdering?.Equals("last", StringComparison.OrdinalIgnoreCase) == true
+                            ? " NULLS LAST"
+                            : string.Empty;
+                    return CompileColumn(ctx, colExpr.ColumnExpr) + direction + nullOrdering;
                 }
 
                 if (x is OrderByRandom)
