@@ -207,6 +207,68 @@ namespace SqlKata
         }
     }
 
+    /// <summary>A SQL-standard EXTRACT(part FROM expression) clause.</summary>
+    public class ExtractColumn : AbstractColumn
+    {
+        public string Part { get; set; }
+        public AbstractColumn Expression { get; set; }
+
+        public override AbstractClause Clone()
+        {
+            return new ExtractColumn
+            {
+                Engine = Engine,
+                Component = Component,
+                Part = Part,
+                Expression = Expression?.Clone() as AbstractColumn,
+                Alias = Alias,
+            };
+        }
+    }
+
+    public class FirebirdDateDiffColumn : AbstractColumn
+    {
+        public string Unit { get; set; }
+        public AbstractColumn Start { get; set; }
+        public AbstractColumn End { get; set; }
+        public override AbstractClause Clone() => new FirebirdDateDiffColumn
+        {
+            Engine = Engine, Component = Component, Unit = Unit,
+            Start = Start?.Clone() as AbstractColumn, End = End?.Clone() as AbstractColumn, Alias = Alias
+        };
+    }
+
+    public class FirebirdDateAddColumn : AbstractColumn
+    {
+        public AbstractColumn Amount { get; set; }
+        public string Unit { get; set; }
+        public AbstractColumn Value { get; set; }
+        public override AbstractClause Clone() => new FirebirdDateAddColumn
+        {
+            Engine = Engine, Component = Component, Unit = Unit,
+            Amount = Amount?.Clone() as AbstractColumn, Value = Value?.Clone() as AbstractColumn, Alias = Alias
+        };
+    }
+
+    public class ExpressionCaseColumn : AbstractColumn
+    {
+        public List<(AbstractColumn Condition, AbstractColumn Value)> Cases { get; set; } = [];
+        public AbstractColumn ElseExpression { get; set; }
+
+        public override AbstractClause Clone()
+        {
+            return new ExpressionCaseColumn
+            {
+                Engine = Engine,
+                Component = Component,
+                Cases = [.. Cases.Select(x =>
+                    (x.Condition.Clone() as AbstractColumn, x.Value.Clone() as AbstractColumn))],
+                ElseExpression = ElseExpression?.Clone() as AbstractColumn,
+                Alias = Alias,
+            };
+        }
+    }
+
     public class NumberColumn : AbstractColumn
     {
         public object Value { get; set; }

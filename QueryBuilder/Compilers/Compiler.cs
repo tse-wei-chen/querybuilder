@@ -604,6 +604,30 @@ namespace SqlKata.Compilers
                 var (value, _) = SplitAlias(expression);
                 sql = $"CAST({value} AS {castColumn.TypeName})";
             }
+            else if (column is ExtractColumn extractColumn)
+            {
+                // The child is an expression, not a SELECT item. Splitting its
+                // SQL on "AS" corrupts nested CAST(... AS type) expressions.
+                var expression = CompileColumn(ctx, extractColumn.Expression);
+                sql = $"EXTRACT({extractColumn.Part} FROM {expression})";
+            }
+            else if (column is FirebirdDateDiffColumn dateDiff)
+            {
+                sql = $"DATEDIFF({dateDiff.Unit} FROM {CompileColumn(ctx, dateDiff.Start)} TO {CompileColumn(ctx, dateDiff.End)})";
+            }
+            else if (column is FirebirdDateAddColumn dateAdd)
+            {
+                sql = $"DATEADD({CompileColumn(ctx, dateAdd.Amount)} {dateAdd.Unit} TO {CompileColumn(ctx, dateAdd.Value)})";
+            }
+            else if (column is ExpressionCaseColumn expressionCase)
+            {
+                var parts = expressionCase.Cases.Select(item =>
+                    $"WHEN {CompileColumn(ctx, item.Condition)} THEN {CompileColumn(ctx, item.Value)}");
+                sql = $"CASE {string.Join(" ", parts)}";
+                if (expressionCase.ElseExpression != null)
+                    sql += $" ELSE {CompileColumn(ctx, expressionCase.ElseExpression)}";
+                sql += " END";
+            }
             else if (column is AggregatedColumn aggregatedColumn)
             {
                 string agg = aggregatedColumn.Aggregate.ToUpperInvariant();
