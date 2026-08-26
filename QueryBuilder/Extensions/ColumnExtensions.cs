@@ -1,5 +1,3 @@
-using System;
-
 namespace SqlKata.Extensions
 {
     public static class ColumnExtensions
